@@ -3,11 +3,21 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Events\ProjectCreated;
 
 class Project extends Model
 {
     //protected $fillable = ['title','description', 'owner_id'];
     protected $guarded = []; 
+
+    protected $dispatchesEvents = [
+        'created' => ProjectCreated::class
+    ];
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function tasks()
     {

@@ -14,8 +14,9 @@ class ProjectsController extends Controller
 
     public function index()
     {
-    	$projects = Project::where('owner_id', auth()->id())->get();
-    	return view('projects.index', ['projects' => $projects]);
+    	return view('projects.index', [
+            'projects' => auth()->user()->projects
+        ]);
     }
 
     public function create()
@@ -34,13 +35,11 @@ class ProjectsController extends Controller
 
     public function store()
     {
-        $validated_attributes = request()->validate([
-            'title' => ['required', 'min:4', 'max:100'],
-            'description' => ['required','min:10', 'max:200']
-        ]);
+        $validated_attributes = $this->validateProject();
         $validated_attributes['owner_id'] = auth()->id();
-        Project::create($validated_attributes);
-    	return redirect('/projects');
+
+        $project = Project::create($validated_attributes);
+    	return redirect('/projects');$project->$owner->email;
     }
 
     public function edit(Project $project)
@@ -52,11 +51,8 @@ class ProjectsController extends Controller
     public function update(Project $project)
     {  
         abort_if(\Gate::denies('update', $project), 403); 
-        $update = request()->validate([
-            'title' => ['required', 'min:4', 'max:100'],
-            'description' => ['required','min:10', 'max:200']
-        ]);
-        $project->update($update);
+
+        $project->update($this->validateProject());
         return redirect('/projects');
     }
 
@@ -66,5 +62,13 @@ class ProjectsController extends Controller
     	$project->delete();
 
     	return redirect('/projects');
+    }
+
+    public function validateProject()
+    {
+        return request()->validate([
+            'title' => ['required', 'min:4', 'max:100'],
+            'description' => ['required','min:10', 'max:200']
+        ]);
     }
 }
